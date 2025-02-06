@@ -123,10 +123,10 @@ class PlantHelper:
                     return_response=True,
                 )
         except TimeoutError:
-            _LOGGER.warning("Openplantook request timed out")
+            _LOGGER.warning("Openplantbook request timed out")
             return None
         except Exception as ex:
-            _LOGGER.warning("Openplantook does not work, error: %s", ex)
+            _LOGGER.warning("Openplantbook does not work, error: %s", ex)
             return None
         if bool(plant_search_result):
             _LOGGER.info("Result: %s", plant_search_result)
@@ -164,6 +164,68 @@ class PlantHelper:
             hass=self.hass,
             title="Species not found",
             message=f"Could not find «{species}» in OpenPlantbook.",
+        )
+        return None
+
+    async def openfarm_search(self, species: str) -> dict[str:Any] | None:
+        """Search Openfarm and return list of result"""
+
+        if not self.has_openfarm:
+            return None
+        if not species or species == "":
+            return None
+
+        try:
+            async with timeout(REQUEST_TIMEOUT):
+                plant_search_result = await self.hass.services.async_call(
+                    domain=DOMAIN_OPENFARM,
+                    service=OPENFARM_SEARCH,
+                    service_data={"alias": species},
+                    blocking=True,
+                    return_response=True,
+                )
+        except TimeoutError:
+            _LOGGER.warning("Openfarm request timed out")
+            return None
+        except Exception as ex:
+            _LOGGER.warning("Openfarm does not work, error: %s", ex)
+            return None
+        if bool(plant_search_result):
+            _LOGGER.info("Result: %s", plant_search_result)
+
+            return plant_search_result
+        return None
+
+    async def openfarm_get(self, species: str) -> dict[str:Any] | None:
+        """Get information about a plant species from OpenFarm"""
+        if not self.has_openfarm:
+            return None
+        if not species or species == "":
+            return None
+
+        try:
+            async with timeout(REQUEST_TIMEOUT):
+                plant_get_result = await self.hass.services.async_call(
+                    domain=DOMAIN_OPENFARM,
+                    service=OPENFARM_GET,
+                    service_data={ATTR_SPECIES: species.lower()},
+                    blocking=True,
+                    return_response=True,
+                )
+        except TimeoutError:
+            _LOGGER.warning("Openfarm request timed out")
+        except Exception as ex:
+            _LOGGER.warning("Openfarm does not work, error: %s", ex)
+            return None
+        if bool(plant_get_result):
+            _LOGGER.debug("Result for %s: %s", species, plant_get_result)
+            return plant_get_result
+
+        _LOGGER.info("Did not find '%s' in Openfarm", species)
+        create_notification(
+            hass=self.hass,
+            title="Species not found",
+            message=f"Could not find «{species}» in Openfarm.",
         )
         return None
 

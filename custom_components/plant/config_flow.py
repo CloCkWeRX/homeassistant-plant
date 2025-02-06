@@ -45,6 +45,8 @@ from .const import (
     DATA_SOURCE,
     DATA_SOURCE_PLANTBOOK,
     DOMAIN,
+    DOMAIN_GROWSTUFF,
+    DOMAIN_OPENFARM,
     DOMAIN_PLANTBOOK,
     DOMAIN_SENSOR,
     FLOW_CONDUCTIVITY_TRIGGER,
@@ -178,6 +180,7 @@ class PlantConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             valid = await self.validate_step_2(user_input)
             if valid:
                 # Store info to use in next step
+                # TODO: Check the other datasources
                 self.plant_info[DATA_SOURCE] = DOMAIN_PLANTBOOK
                 self.plant_info[ATTR_SPECIES] = user_input[ATTR_SPECIES]
 
@@ -189,7 +192,13 @@ class PlantConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             species=self.plant_info[ATTR_SEARCH_FOR]
         )
         if search_result is None:
-            return await self.async_step_limits()
+            self.plant_info[DATA_SOURCE] = DOMAIN_OPENFARM
+            search_result = await plant_helper.openfarm_search(
+                species=self.plant_info[ATTR_SEARCH_FOR]
+            )
+
+            if search_result is None:
+                return await self.async_step_limits()
         dropdown = []
         for pid, display_pid in search_result.items():
             dropdown.append({"label": display_pid, "value": pid})
