@@ -85,6 +85,17 @@ class PlantHelper:
         self.hass = hass
 
     @property
+    def hasopenfarm(self) -> bool:
+        """Helper function to check if openfarm is available"""
+        _LOGGER.debug(
+            "%s in services? %s",
+            DOMAIN_OPENFARM,
+            DOMAIN_OPENFARM in self.hass.services.async_services(),
+        )
+        return DOMAIN_OPENFARM in self.hass.services.async_services()
+
+
+    @property
     def has_openplantbook(self) -> bool:
         """Helper function to check if openplantbook is available"""
         _LOGGER.debug(

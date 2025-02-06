@@ -2,6 +2,8 @@
 
 DOMAIN = "plant"
 DOMAIN_SENSOR = "sensor"
+DOMAIN_GROWSTUFF = "growstuff"
+DOMAIN_OPENFARM = "openfarm"
 DOMAIN_PLANTBOOK = "openplantbook"
 
 REQUEST_TIMEOUT = 30
